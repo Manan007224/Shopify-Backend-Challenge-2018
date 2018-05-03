@@ -1,0 +1,17 @@
+{
+  "name": "shopify_backend_challenge",
+  "version": "1.0.0",
+  "description": "Shopify Fall 2018 Backend Challenge Solution",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Manan Maniyar",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.3",
+    "http": "0.0.0",
+    "request": "^2.85.0",
+    "util": "^0.10.3"
+  }
+}
