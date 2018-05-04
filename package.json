@@ -12,6 +12,7 @@
     "express": "^4.16.3",
     "http": "0.0.0",
     "request": "^2.85.0",
+    "request-promise": "^4.2.2",
     "sync": "^0.2.5",
     "util": "^0.10.3"
   }
