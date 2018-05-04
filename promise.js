@@ -2,12 +2,7 @@ const request_promise = require('request-promise');
 
 const URL = 'https://backend-challenge-fall-2018.herokuapp.com/carts.json?id='
 
-const input = {
-	  "id": 1,
-	  "discount_type": "product",
-	  "discount_value": 2,
-	  "collection": "Summer"
-};
+const input = { "id": 3, "discount_type": "product", "discount_value": 20.0, "product_value": 15.0 }
 
 // Function to calculate the number of given pages for a particular id from the input
 // returns an Integer
@@ -58,20 +53,35 @@ async function checkID() {
 // Calculate the discout for a particular page and a particular id
 // returns a JSON object containing total_amount and discount_amount
 
-const findDiscount = (apiData) => {
+const findDiscount = (apiData, uniKey) => {
 	let prices = {};
 	let products = apiData.products;
 	let products_length =  Object.keys(products).length;
 	let total_amount = 0; let discount_amount = 0;
-	for(let pr=0; pr<products_length; pr++) {
-		total_amount +=products[pr].price;
-		if((products[pr].hasOwnProperty('collection')) && (products[pr].collection === input.collection)) 
-			discount_amount += input.discount_value;
+	if(uniKey === 'collection') {
+		for(let pr=0; pr<products_length; pr++) {
+			total_amount += products[pr].price;
+			if((products[pr].hasOwnProperty('collection')) && (products[pr].collection === input.collection)) {
+				if(products[pr].price <= input.discount_value) discount_amount += products[pr].price;
+				else discount_amount += input.discount_value;
+			}
+		}
 	}
-	return {
-		amount: total_amount,
-		discount: discount_amount
-	};
+	else if(uniKey === 'product_value') {
+		for(let pr=0; pr<products_length; pr++) {
+			total_amount += products[pr].price;
+			if(products[pr].hasOwnProperty('price') && products[pr].price >= input.product_value){
+				if(products[pr].price <= input.discount_value) discount_amount += products[pr].price;
+				else discount_amount += input.discount_value;
+			}
+		}
+	}
+	else { // This is the condition if the input has the prop of cart_value. Discount mechanism is handled in getData function
+		for(let pr=0; pr<products_length; pr++) {
+			total_amount += products[pr].price;
+		}
+	}
+	return {amount: total_amount, discount: discount_amount};
 }
 
 // Function to calculate the final amount and discount
@@ -86,13 +96,14 @@ async function getData() {
 			let discount = 0; let total = 0;
 			for(let pg=1; pg<=pages; pg++) {
 				let res = await get_api(pg);
-				let prices = await findDiscount(res);
+				let uniKey = Object.keys(input)[3];
+				let prices = await findDiscount(res, uniKey);
 				total += prices.amount; discount += prices.discount;
 			}
-			output =  {
-				"total_amount" : total,
-				"total_after_discount" : (total-discount)
-			}
+			// Condition to handle cart_value uniqueKey is handled here
+			if(Object.keys(input)[3] === 'cart_value' && total >= input.cart_value) ds = total-input.discount_value;
+			else ds = total-discount
+			output =  {"total_amount" : total, "total_after_discount" : ds};
 			console.log(JSON.stringify(output));
 		}
 		else console.log('Please enter a valid ID');
